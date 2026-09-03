@@ -7,11 +7,15 @@ const esc=v=>{const e=document.createElement('div');e.textContent=v??'';return e
 const pilot=()=>JSON.parse(localStorage.getItem('po-pilot')||'{}');
 async function hash(value){const bytes=new TextEncoder().encode(value),digest=await crypto.subtle.digest('SHA-256',bytes);return [...new Uint8Array(digest)].map(b=>b.toString(16).padStart(2,'0')).join('')}
 async function init(){
-  try{config=await fetch('data/club-config.json',{cache:'no-store'}).then(r=>r.json())}catch{}
-  const local=JSON.parse(localStorage.getItem('po-club-config')||'null');if(local)config=local;
+  let central=config;
+  try{central=await fetch('data/club-config.json',{cache:'no-store'}).then(r=>r.json())}catch{}
+  const local=JSON.parse(localStorage.getItem('po-club-config')||'null');
+  config=local?{...central,...local,pilots:central.pilots||[],tasks:central.tasks||[]}:central;
   $('fleetEmail').value=config.fleetEmail||'';$('orgCode').value=config.orgCode||'PO';renderAircraftSelect();
+  $('pilotName').innerHTML='<option value="">Selecteer uw naam…</option>'+(config.pilots||[]).map(p=>`<option value="${esc(p.name)}">${esc(p.name)}</option>`).join('');
   $('date').valueAsDate=new Date();updateNumber();
-  const p=pilot();if(!p.name||!p.licence)$('pilotDialog').showModal();
+  const p=pilot(),isAuthorised=(config.pilots||[]).some(item=>item.name===p.name);
+  if(!p.name||!p.licence||!isAuthorised){localStorage.removeItem('po-pilot');$('pilotDialog').showModal()}
 }
 function renderAircraftSelect(){
   $('registration').innerHTML='<option value="">Selecteer registratie…</option>'+config.aircraft.map((a,i)=>`<option value="${i}">${esc(a.registration)} · ${esc(a.callSign||'')} · ${esc(a.type)}</option>`).join('');
@@ -24,10 +28,12 @@ function selectAircraft(){
   const a=selectedAircraft();updateNumber();
   if(!a){$('task').innerHTML='<option value="">Selecteer eerst een vliegtuig…</option>';$('ampTask').value='';$('aircraftInfo').hidden=true;return}
   $('aircraftInfo').innerHTML=`<div><strong>Call sign</strong>${esc(a.callSign||'—')}</div><div><strong>Type</strong>${esc(a.type)}</div><div><strong>Fabrikant</strong>${esc(a.manufacturer)}</div><div><strong>Serienummer</strong>${esc(a.serialNumber)}</div>`;
-  $('aircraftInfo').hidden=false;$('task').innerHTML=a.tasks.length?'<option value="">Selecteer AMP-taak…</option>'+a.tasks.map((t,i)=>`<option value="${i}">${esc(t.label)}</option>`).join(''):'<option value="">Nog geen AMP-taken ingesteld</option>';$('ampTask').value='';
+  const tasks=a.tasks?.length?a.tasks:(config.tasks||[]);
+  $('aircraftInfo').hidden=false;$('task').innerHTML=tasks.length?'<option value="">Selecteer piloot-eigenaar-taak…</option>'+tasks.map((t,i)=>`<option value="${i}">${esc(t.label)}</option>`).join(''):'<option value="">Nog geen taken ingesteld</option>';$('ampTask').value='';
 }
-function selectTask(){const a=selectedAircraft(),t=$('task').value===''?undefined:a?.tasks[Number($('task').value)];$('ampTask').value=t?.ampText||''}
-function buildData(){const a=selectedAircraft(),p=pilot(),t=a.tasks[Number($('task').value)];return{number:workorderNumber(),date:nlDate($('date').value),registration:a.registration,type:a.type,manufacturer:a.manufacturer,serialNumber:a.serialNumber,task:t.label,ampTask:t.ampText,work:$('work').value.trim(),licence:p.licence,name:p.name,documentation:$('documentation').value.trim()}}
+function availableTasks(){const a=selectedAircraft();return a?.tasks?.length?a.tasks:(config.tasks||[])}
+function selectTask(){const t=$('task').value===''?undefined:availableTasks()[Number($('task').value)];$('ampTask').value=t?.ampText||''}
+function buildData(){const a=selectedAircraft(),p=pilot(),t=availableTasks()[Number($('task').value)];return{number:workorderNumber(),date:nlDate($('date').value),registration:a.registration,type:a.type,manufacturer:a.manufacturer,serialNumber:a.serialNumber,task:t.label,ampTask:t.ampText,work:$('work').value.trim(),licence:p.licence,name:p.name,documentation:$('documentation').value.trim()}}
 function logText(d){return `Piloot-eigenaar onderhoud uitgevoerd: ${d.task}. AMP-taak: ${d.ampTask}. Zie workorder ${d.number} voor de verrichte werkzaamheden en gebruikte onderhoudsgegevens. Voltooid op ${d.date}. Vrijgegeven voor gebruik overeenkomstig EASA Part-ML, ML.A.803. Uitvoerder: ${d.name}, SPL ${d.licence}. Handtekening: __________________.`}
 function render(d){$('resultNumber').textContent=d.number;$('summary').innerHTML=`<dt>Datum</dt><dd>${esc(d.date)}</dd><dt>Vliegtuig</dt><dd>${esc(d.registration)} · ${esc(d.manufacturer)} ${esc(d.type)} · S/N ${esc(d.serialNumber)}</dd><dt>Taak</dt><dd>${esc(d.task)}</dd><dt>AMP-taak</dt><dd>${esc(d.ampTask)}</dd><dt>Werkzaamheden</dt><dd>${esc(d.work)}</dd><dt>Uitvoerder</dt><dd>${esc(d.name)} · SPL ${esc(d.licence)}</dd><dt>Documentatie</dt><dd>${esc(d.documentation)}</dd>`;$('logbookText').textContent=logText(d);result.hidden=false;result.scrollIntoView({behavior:'smooth',block:'start'})}
 function renderEditor(){
@@ -47,7 +53,7 @@ function readEditor(){
   });
 }
 function downloadConfig(){readEditor();const blob=new Blob([JSON.stringify(config,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='club-config.json';a.click();URL.revokeObjectURL(a.href)}
-$('savePilot').addEventListener('click',e=>{e.preventDefault();const f=$('pilotForm');if(!f.reportValidity())return;localStorage.setItem('po-pilot',JSON.stringify({name:$('pilotName').value.trim(),licence:$('pilotLicence').value.trim().toUpperCase()}));$('pilotDialog').close()});
+$('savePilot').addEventListener('click',e=>{e.preventDefault();const f=$('pilotForm'),name=$('pilotName').value;if(!f.reportValidity())return;if(!(config.pilots||[]).some(p=>p.name===name)){alert('Selecteer een piloot-eigenaar uit de vaste clublijst.');return}localStorage.setItem('po-pilot',JSON.stringify({name,licence:$('pilotLicence').value.trim().toUpperCase()}));$('pilotDialog').close()});
 $('settingsButton').addEventListener('click',()=>{const first=!localStorage.getItem('po-admin-hash');$('loginHint').textContent=first?'Kies bij het eerste gebruik een beheerderswachtwoord. Dit blijft op dit apparaat bewaard.':'Voer het beheerderswachtwoord in.';$('passwordLabel').textContent=first?'Nieuw wachtwoord':'Wachtwoord';$('confirmPasswordWrap').hidden=!first;$('adminPasswordConfirm').required=first;$('loginDialog').showModal()});
 $('loginButton').addEventListener('click',async e=>{e.preventDefault();const first=!localStorage.getItem('po-admin-hash'),password=$('adminPassword').value;if(password.length<6){$('adminPassword').setCustomValidity('Gebruik minimaal 6 tekens.');$('adminPassword').reportValidity();return}$('adminPassword').setCustomValidity('');if(first&&password!==$('adminPasswordConfirm').value){$('adminPasswordConfirm').setCustomValidity('Wachtwoorden zijn niet gelijk.');$('adminPasswordConfirm').reportValidity();return}const value=await hash(password);if(!first&&value!==localStorage.getItem('po-admin-hash')){$('adminPassword').setCustomValidity('Onjuist wachtwoord.');$('adminPassword').reportValidity();return}if(first)localStorage.setItem('po-admin-hash',value);$('loginDialog').close();$('adminPassword').value='';$('adminPasswordConfirm').value='';renderEditor();settingsDialog.showModal()});
 $('addAircraft').addEventListener('click',()=>{readEditor();config.aircraft.push({registration:'',callSign:'',type:'',manufacturer:'',serialNumber:'',tasks:[]});renderEditor()});
