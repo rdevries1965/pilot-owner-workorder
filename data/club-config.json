@@ -1,0 +1,18 @@
+{
+  "fleetEmail": "",
+  "orgCode": "PO",
+  "aircraft": [
+    {
+      "registration": "PH-XXXX",
+      "type": "Voorbeeldtype",
+      "manufacturer": "Voorbeeldfabrikant",
+      "serialNumber": "0000",
+      "tasks": [
+        {
+          "label": "Voorbeeld piloot-eigenaar taak",
+          "ampText": "Exacte omschrijving en/of taakreferentie uit het actuele AMP"
+        }
+      ]
+    }
+  ]
+}
