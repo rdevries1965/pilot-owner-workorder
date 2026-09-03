@@ -1,0 +1,13 @@
+input[readonly]{background:#eef3f6;color:#425565}
+.aircraft-info{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;background:#eaf4f8;border:1px solid #c4dce6;border-radius:8px;padding:10px 12px;margin:0 0 15px;font-size:.82rem}
+.aircraft-info strong{display:block;color:var(--navy);margin-bottom:2px}
+.intro{font-size:.88rem;color:var(--muted);line-height:1.45;margin:-6px 0 16px}
+.admin-section{border-top:1px solid var(--line);padding-top:14px;margin-top:6px}
+.section-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.section-head button,.aircraft-card button{border:0;background:#e6eff4;color:var(--navy);border-radius:6px;padding:7px 9px;font-weight:800}
+.aircraft-card{background:#f4f8fa;border:1px solid var(--line);border-radius:8px;padding:12px;margin-bottom:10px}
+.aircraft-card .card-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.aircraft-card label{margin-bottom:8px}
+.aircraft-card .remove{color:#9a2d2d;background:#f9e8e8}
+.full{width:100%;margin-top:9px}
+@media(max-width:560px){.aircraft-info{grid-template-columns:1fr}.aircraft-card .card-grid{grid-template-columns:1fr}}
