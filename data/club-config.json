@@ -2,17 +2,14 @@
   "fleetEmail": "",
   "orgCode": "PO",
   "aircraft": [
-    {
-      "registration": "PH-XXXX",
-      "type": "Voorbeeldtype",
-      "manufacturer": "Voorbeeldfabrikant",
-      "serialNumber": "0000",
-      "tasks": [
-        {
-          "label": "Voorbeeld piloot-eigenaar taak",
-          "ampText": "Exacte omschrijving en/of taakreferentie uit het actuele AMP"
-        }
-      ]
-    }
+    {"registration":"PH-1431","callSign":"GO1","manufacturer":"DG Flugzeugbau GmbH","type":"DG-1000S","serialNumber":"10-132S85","tasks":[]},
+    {"registration":"PH-1432","callSign":"GO2","manufacturer":"DG Flugzeugbau GmbH","type":"DG-1000S","serialNumber":"10-134S86","tasks":[]},
+    {"registration":"PH-1489","callSign":"GO3","manufacturer":"Schempp-Hirth Flugzeugbau GmbH","type":"Duo Discus T","serialNumber":"232","tasks":[]},
+    {"registration":"PH-790","callSign":"GO4","manufacturer":"Rolladen-Schneider Flugzeugbau GmbH","type":"LS 4-a","serialNumber":"4579","tasks":[]},
+    {"registration":"PH-1644","callSign":"GO5","manufacturer":"Rolladen-Schneider Flugzeugbau GmbH","type":"LS 4-a","serialNumber":"4461","tasks":[]},
+    {"registration":"PH-1372","callSign":"GO6","manufacturer":"Allstar PZL Glider Spólka z.o.o.","type":"SZD-51-1 \"Junior\"","serialNumber":"511.A.05.011","tasks":[]},
+    {"registration":"PH-1373","callSign":"GO7","manufacturer":"Allstar PZL Glider Spólka z.o.o.","type":"SZD-51-1 \"Junior\"","serialNumber":"511.A.06.012","tasks":[]},
+    {"registration":"PH-1573","callSign":"GO8","manufacturer":"DG Flugzeugbau GmbH","type":"DG-1000S","serialNumber":"10-44S43","tasks":[]},
+    {"registration":"PH-1603","callSign":"GO9","manufacturer":"Schempp-Hirth Flugzeugbau GmbH","type":"Discus-2cT","serialNumber":"6","tasks":[]}
   ]
 }
