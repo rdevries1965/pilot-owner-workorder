@@ -1,0 +1,8 @@
+{
+  "name": "piloot-eigenaar-workorder",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "build": "rm -rf dist && mkdir -p dist/.openai dist/data && cp index.html styles.css admin.css app.js dist/ && cp data/club-config.json dist/data/club-config.json && cp .openai/hosting.json dist/.openai/hosting.json"
+  }
+}
