@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0e2237">
+  <meta name="description" content="Workorder en logboektekst voor beperkt piloot-eigenaar onderhoud onder EASA Part-ML.">
+  <title>Piloot-eigenaar Workorder</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brandmark" aria-hidden="true">ZE</div>
+    <div><strong>WORKORDER</strong><span>Piloot-eigenaar · Part-ML</span></div>
+    <button class="icon-button" id="settingsButton" type="button" aria-label="Instellingen" title="Instellingen">⚙</button>
+  </header>
+
+  <main>
+    <section class="status-strip" aria-label="Workorderstatus">
+      <span class="status-dot"></span>
+      <span>Nieuwe workorder</span>
+      <strong id="woNumber">—</strong>
+    </section>
+
+    <form id="workorderForm">
+      <div class="form-grid">
+        <label><span>Datum</span><input id="date" type="date" required></label>
+        <label><span>Vliegtuig</span><select id="registration" required><option value="">Selecteer registratie…</option></select></label>
+      </div>
+
+      <div id="aircraftInfo" class="aircraft-info" hidden></div>
+
+      <label><span>Taak piloot-eigenaar</span>
+        <select id="task" required>
+          <option value="">Selecteer eerst een vliegtuig…</option>
+        </select>
+      </label>
+      <label><span>Taak zoals opgenomen in AMP</span><input id="ampTask" type="text" readonly required></label>
+
+      <label><span>Verrichte werkzaamheden</span><textarea id="work" rows="5" placeholder="Beschrijf concreet wat is gecontroleerd, verwijderd, vervangen, gemonteerd en getest." required></textarea></label>
+      <label><span>Gebruikte documentatie</span><textarea id="documentation" rows="3" placeholder="Bijv. onderhoudshandboek, hoofdstuk/taak, revisie en datum" required></textarea></label>
+
+      <div class="check-panel">
+        <label class="check"><input id="confirmSafe" type="checkbox" required><span>De werkzaamheden zijn volledig uitgevoerd; er is geen bekende afwijking die de vliegveiligheid in gevaar brengt.</span></label>
+      </div>
+
+      <button class="primary" type="submit">CONTROLEER WORKORDER</button>
+    </form>
+
+    <section id="result" class="result" hidden>
+      <div class="result-head"><div><small>GEREED VOOR VERZENDING</small><h2 id="resultNumber"></h2></div><span class="ready">GEREED</span></div>
+      <dl id="summary"></dl>
+      <div class="logbook">
+        <div class="logbook-title"><strong>Tekst voor vliegtuiglogboek</strong><button id="copyButton" type="button">KOPIEER</button></div>
+        <p id="logbookText"></p>
+      </div>
+      <p class="signature-note">Zet in het vliegtuiglogboek ook uw naam en handtekening bij deze verklaring.</p>
+      <div class="actions">
+        <button id="printButton" class="secondary" type="button">PRINT / PDF</button>
+        <button id="mailButton" class="primary" type="button">MAIL WORKORDER</button>
+      </div>
+    </section>
+
+    <details class="legal-note">
+      <summary>Wanneer mag deze app worden gebruikt?</summary>
+      <p>Alleen voor beperkt piloot-eigenaar onderhoud dat voor het vliegtuig in het actuele onderhoudsprogramma (AMP) is vastgelegd. De uitvoerder moet pilot-owner zijn, bevoegd en bekwaam zijn en de actuele onderhoudsgegevens volgen.</p>
+      <p>De app bepaalt niet of een taak is toegestaan. Stuur de melding bij een contract met een CAMO/CAO uiterlijk 30 dagen na uitvoering.</p>
+    </details>
+  </main>
+
+  <dialog id="pilotDialog">
+    <form method="dialog" id="pilotForm">
+      <div class="dialog-head"><h2>Piloot-eigenaar</h2></div>
+      <p class="intro">Vul deze gegevens eenmalig in. Ze blijven op dit apparaat bewaard.</p>
+      <label><span>Naam piloot-eigenaar</span><input id="pilotName" type="text" required></label>
+      <label><span>SPL-nummer</span><input id="pilotLicence" type="text" placeholder="NL.SFCL.123456" required></label>
+      <button id="savePilot" class="primary" value="default">OPSLAAN</button>
+    </form>
+  </dialog>
+
+  <dialog id="loginDialog">
+    <form method="dialog" id="loginForm">
+      <div class="dialog-head"><h2>Vlootbeheerder</h2><button value="cancel" aria-label="Sluiten">×</button></div>
+      <p id="loginHint" class="intro"></p>
+      <label><span id="passwordLabel">Wachtwoord</span><input id="adminPassword" type="password" autocomplete="current-password" required></label>
+      <label id="confirmPasswordWrap" hidden><span>Herhaal wachtwoord</span><input id="adminPasswordConfirm" type="password"></label>
+      <button id="loginButton" class="primary" value="default">DOORGAAN</button>
+    </form>
+  </dialog>
+
+  <dialog id="settingsDialog">
+    <form method="dialog" id="settingsForm">
+      <div class="dialog-head"><h2>Vlootbeheer</h2><button value="cancel" aria-label="Sluiten">×</button></div>
+      <label><span>E-mail vlootbeheerder</span><input id="fleetEmail" type="email" placeholder="vlootbeheer@example.nl"></label>
+      <label><span>Organisatiecode workorder</span><input id="orgCode" type="text" maxlength="8" value="PO"></label>
+      <div class="admin-section">
+        <div class="section-head"><strong>Vliegtuigen en AMP-taken</strong><button id="addAircraft" type="button">+ VLIEGTUIG</button></div>
+        <div id="aircraftEditor"></div>
+      </div>
+      <button id="saveSettings" class="primary" value="default">OPSLAAN</button>
+      <button id="exportConfig" class="secondary full" type="button">EXPORTEER JSON VOOR GITHUB</button>
+      <p class="privacy">Beheerinstellingen worden op dit apparaat bewaard. Exporteer de JSON om de centrale clublijst in GitHub bij te werken.</p>
+    </form>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>
